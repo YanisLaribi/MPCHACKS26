@@ -18,6 +18,9 @@ function App() {
   const [explanation, setExplanation] = useState(null);
   const [loadingExplanation, setLoadingExplanation] = useState(false);
 
+  // Search query state
+  const [searchQuery, setSearchQuery] = useState("");
+
   // Bottom panel (drawer) resizable height states
   const [footerHeight, setFooterHeight] = useState(240); // 240px default
   const [isResizing, setIsResizing] = useState(false);
@@ -224,6 +227,18 @@ function App() {
 
   const selectedTx = queue.find(t => t.transaction_id === selectedId);
 
+  // Filter queue in real-time as user types
+  const filteredQueue = queue.filter(tx => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      tx.transaction_id.toLowerCase().includes(query) ||
+      (tx.card_id && tx.card_id.toLowerCase().includes(query)) ||
+      (tx.merchant_name && tx.merchant_name.toLowerCase().includes(query)) ||
+      (tx.merchant_country && tx.merchant_country.toLowerCase().includes(query))
+    );
+  });
+
   // We convert the backend score (rank average out of 1000) to percentage directly
   const getScorePercentage = (scoreVal) => {
     if (!scoreVal) return "0.0";
@@ -237,7 +252,13 @@ function App() {
           <h1 className="text-headline-sm font-headline-md text-primary tracking-tight">Fraud Hunter <span className="font-normal opacity-50 text-body-sm">v2.5.0</span></h1>
           <div className="relative flex items-center bg-surface-container-low border border-outline-variant rounded px-2 h-8 w-64">
             <span className="material-symbols-outlined text-[18px] opacity-40">search</span>
-            <input className="bg-transparent border-none focus:outline-none text-body-sm w-full placeholder-on-surface-variant/50 ml-1" placeholder="Search TxID..." type="text"/>
+            <input 
+              className="bg-transparent border-none focus:outline-none text-body-sm w-full placeholder-on-surface-variant/50 ml-1" 
+              placeholder="Search TxID, Card, Merchant..." 
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -295,15 +316,21 @@ function App() {
           <div className="w-80 lg:w-96 border-r border-outline-variant flex flex-col bg-surface-container-lowest shrink-0">
             <div className="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low/50">
               <span className="text-label-caps text-on-surface-variant">Review Queue</span>
-              <span className="bg-primary-container text-on-primary-container px-2 py-0.5 rounded text-[11px] font-bold">{queue.length}</span>
+              <span className="bg-primary-container text-on-primary-container px-2 py-0.5 rounded text-[11px] font-bold">
+                {searchQuery.trim() ? `${filteredQueue.length}/${queue.length}` : queue.length}
+              </span>
             </div>
             <div className="flex-1 overflow-y-auto terminal-scroll">
               {queue.length === 0 ? (
                 <div className="p-8 text-center text-on-surface-variant opacity-40 text-body-sm">
                   {uploading ? "Analyzing new database..." : "Queue Clear. Import transactions.csv to start!"}
                 </div>
+              ) : filteredQueue.length === 0 ? (
+                <div className="p-8 text-center text-on-surface-variant opacity-40 text-body-sm">
+                  No matching transactions found for "{searchQuery}"
+                </div>
               ) : (
-                queue.map(tx => {
+                filteredQueue.map(tx => {
                   const isActive = tx.transaction_id === selectedId;
                   const riskPercent = getScorePercentage(tx.anomaly_score);
                   const riskColor = parseFloat(riskPercent) > 80 ? 'text-error' : (parseFloat(riskPercent) > 50 ? 'text-on-tertiary-container' : 'text-secondary');

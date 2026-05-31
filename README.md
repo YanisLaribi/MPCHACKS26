@@ -156,3 +156,25 @@ By default, the React frontend is configured to send requests to `http://localho
 
 ## Security Note
 The database URI included in `app/database.py` is configured for this hackathon environment. In a production release, always use an `.env` file and keep credentials out of version control.
+
+---
+
+## 🔮 If We Had Another Week... (Future Roadmap)
+
+If we had another week to push **Fraud Hunter** to the absolute limit, here is the futuristic roadmap we would implement:
+
+### 1. 🧠 Expert-Aligned Adaptive Online Learning (Human-in-the-Loop)
+We would transition our offline pyod detectors into a **dynamically adapting online model**. 
+- Every time a human fraud analyst clicks **Approve**, **Block**, or **Escalate** in the triage queue, the system would capture this decision.
+- Using active learning and online reinforcement feedback loops, the machine learning models would **continuously retrain and calibrate their weights** based on expert choices, dynamically adapting to the expert's specific threat tolerance and instantly minimizing false positives.
+
+### 2. 🌌 Generative Adversarial Fraud Simulation & Stress-Testing (The "Unthought" Idea)
+Instead of waiting for new fraud patterns to strike, we would build an **Adversarial Generative Fraud Simulator**:
+- Using **Generative Adversarial Networks (GANs)** and generative LLM agents, we would simulate highly sophisticated, unseen synthetic fraud strategies that have never occurred in the historical dataset (e.g., coordinated trickle-spend, dynamic velocity bypasses).
+- This allows us to **proactively stress-test** our multi-model anomaly detection thresholds and validate the robustness of our SHAP explanation models *before* new attack vectors emerge in the real world.
+
+### 3. 🔒 Privacy-Preserving Zero-Knowledge Collaborative Intelligence
+Enable multiple financial institutions or merchants to securely pool their fraud detection power:
+- Implement **Federated Learning** combined with **Homomorphic Encryption**.
+- This allows organizations to collaboratively train a shared high-fidelity anomaly detection model *without ever exposing raw transaction logs, PII, or credit card information* to other parties, creating a completely secure industry-wide collaborative fraud defense network.
+

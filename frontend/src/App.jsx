@@ -15,6 +15,29 @@ function App() {
   // Ledger active decision filter: 'ALL', 'BLOCK', 'APPROVE', 'ESCALATE'
   const [ledgerFilter, setLedgerFilter] = useState('ALL');
 
+  const [explanation, setExplanation] = useState(null);
+  const [loadingExplanation, setLoadingExplanation] = useState(false);
+
+  const fetchExplanation = async (id) => {
+    if (!id) return;
+    setLoadingExplanation(true);
+    setExplanation(null);
+    try {
+      const res = await axios.get(`${API_BASE}/transactions/${id}/explain`);
+      setExplanation(res.data.explanation);
+    } catch (error) {
+      setExplanation("Failed to load Gemini anomaly explanation.");
+    } finally {
+      setLoadingExplanation(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedId) {
+      fetchExplanation(selectedId);
+    }
+  }, [selectedId]);
+
   const fetchQueue = async () => {
     try {
       const res = await axios.get(`${API_BASE}/queue`);
@@ -303,6 +326,23 @@ function App() {
                         <div className="inline-flex items-center px-2 py-0.5 rounded bg-primary-container border border-outline-variant text-[11px] font-medium text-on-primary-container uppercase">
                             {selectedTx.status}
                         </div>
+                    </div>
+                </div>
+
+                {/* Gemini AI Copilot Explanation */}
+                <div className="space-y-3">
+                    <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block">Gemini AI Copilot Anomaly Explanation</label>
+                    <div className="p-4 bg-surface-container-low border border-outline-variant rounded-lg">
+                        {loadingExplanation ? (
+                            <div className="text-body-sm font-medium text-primary animate-pulse flex items-center gap-2">
+                                <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                                Analyzing anomalous features and generating plain-English explanation...
+                            </div>
+                        ) : explanation ? (
+                            <p className="text-body-sm text-on-surface leading-relaxed">{explanation}</p>
+                        ) : (
+                            <span className="text-body-sm opacity-50">No AI explanation generated.</span>
+                        )}
                     </div>
                 </div>
 

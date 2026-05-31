@@ -103,3 +103,10 @@ async def get_ledger(decision: str = None):
     for log in logs:
         log["_id"] = str(log["_id"])
     return logs
+
+@router.get("/transactions/{transaction_id}/explain")
+async def get_transaction_explanation(transaction_id: str):
+    from app.services.ml_pipeline import explain_transaction_with_gemini
+    explanation = explain_transaction_with_gemini(transaction_id)
+    return {"explanation": explanation}
+

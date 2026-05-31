@@ -122,26 +122,28 @@ function App() {
     const tx = queue.find(t => t.transaction_id === id);
     if (!tx) return;
 
+    // 1. OPTIMISTIC UPDATE: Instantly remove from queue & select next transaction
+    setQueue(prev => prev.filter(t => t.transaction_id !== id));
+    
+    const newQueue = queue.filter(t => t.transaction_id !== id);
+    if (newQueue.length > 0) {
+      setSelectedId(newQueue[0].transaction_id);
+    } else {
+      setSelectedId(null);
+    }
+    
+    logAction('TRIAGE_SIGNAL', `Applied ${action.toUpperCase()} to ${id}`);
+
     try {
+      // 2. Perform background POST request
       await axios.post(`${API_BASE}/triage/${id}`, { decision: action });
       
-      // Update local state for immediate feedback
-      setQueue(prev => prev.filter(t => t.transaction_id !== id));
-      
-      // Select next item
-      const newQueue = queue.filter(t => t.transaction_id !== id);
-      if (newQueue.length > 0) {
-        setSelectedId(newQueue[0].transaction_id);
-      } else {
-        setSelectedId(null);
-      }
-      
-      logAction('TRIAGE_SIGNAL', `Applied ${action.toUpperCase()} to ${id}`);
-      
-      // Refresh ledger
+      // Refresh ledger in background
       fetchLedger();
     } catch (err) {
-      logAction('Error', `Failed to triage ${id}`);
+      logAction('Error', `Failed to triage ${id}. Rolling back state...`);
+      // Rollback to sync with server
+      fetchQueue();
     }
   };
 

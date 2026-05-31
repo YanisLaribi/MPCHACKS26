@@ -631,11 +631,17 @@ shap.waterfall_plot(
     show=True
 )
 
-"""A FAIRE
+import google.generativeai as genai
+import os
 
-import anthropic
-
-client = anthropic.Anthropic(api_key="YOUR_KEY")
+# Configure the Gemini API client
+# Falls back to standard environment variables
+api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+if api_key:
+    genai.configure(api_key=api_key)
+else:
+    print("WARNING: Neither GEMINI_API_KEY nor GOOGLE_API_KEY environment variable was found. Please set one of them.")
+    genai.configure(api_key="YOUR_GEMINI_API_KEY")
 
 def explain_fraud_case(row_idx, shap_vals, top_n=5):
     # get top N features driving this prediction
@@ -655,7 +661,7 @@ def explain_fraud_case(row_idx, shap_vals, top_n=5):
         for feat, contrib in feat_importance
     ])
     
-    prompt = f'''
+    prompt = f"""
 A transaction has been flagged as high-confidence fraud by 4 independent
 anomaly detection models. Here are the top features driving this decision:
 
@@ -664,22 +670,22 @@ anomaly detection models. Here are the top features driving this decision:
 Transaction details:
 - Amount: {row_data.get('amount', 'N/A')}
 - Hour of day: {row_data.get('hour_of_day', 'N/A')}
-- Confidence level: {row_data.get('confidence', 'N/A')}
+- Confidence level: {row_data.get('fraud_confidence', 'N/A')}
 - Anomaly score: {row_data.get('anomaly_score', 'N/A'):.1f}/1000
 
 In 2-3 sentences, explain why this transaction is suspicious in plain English
 for a fraud analyst. Be specific about which signals are most concerning.
-'''
+"""
     
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=200,
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response.content[0].text
+    try:
+        model = genai.GenerativeModel("gemini-2.5-flash")
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        return f"Error calling Gemini API: {e}"
 
 # run on top 5 highest confidence cases
-top_5_idx = (df[df['confidence'] == 'high']
+top_5_idx = (df[df['fraud_confidence'] == 'high confidence']
     .sort_values('anomaly_score', ascending=False)
     .head(5)
     .index)
@@ -688,5 +694,5 @@ for idx in top_5_idx:
     print(f"\nTransaction {idx} (score: {df.loc[idx, 'anomaly_score']:.1f})")
     print(explain_fraud_case(idx, shap_values))
     print("-" * 60)
-"""
+
 

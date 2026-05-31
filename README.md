@@ -1,13 +1,13 @@
 # Fraud Hunter — Enterprise Transaction Triage
 
-Welcome to Fraud Hunter, a high-performance enterprise real-time transaction triage and fraud detection suite. This project is composed of a cutting-edge FastAPI (Python) ML-driven backend and a beautiful, high-fidelity React/Vite (TailwindCSS) frontend dashboard.
+Welcome to **Fraud Hunter**, a high-performance enterprise real-time transaction triage and fraud detection suite. This project is composed of a cutting-edge **FastAPI (Python) ML-driven backend** and a beautiful, high-fidelity **React/Vite (TailwindCSS) frontend dashboard**.
 
 ---
 
 ## Key Features
 
 - **Real-time Triage Queue**: View flagged high-risk transactions instantly with a premium, sleek UI.
-- **Machine Learning Scoring**: Transactions are run through a robust ML pipeline powered by advanced algorithms (PyOD, scikit-learn) to calculate a risk score.
+- **Machine Learning Scoring**: Transactions are run through a robust ML pipeline powered by advanced algorithms (`PyOD`, `scikit-learn`) to calculate a risk score.
 - **Geographic and Behavioral Insights**: Includes country mapping with GeoLite2, IP verification, and device-matching anomaly metrics.
 - **Audit Ledger**: Complete audit logging of reviewer actions to support compliance and investigation requirements.
 
@@ -30,9 +30,9 @@ graph TD
 
 ### Backend
 - **Framework**: FastAPI (Asynchronous high-performance Python API)
-- **Database**: MongoDB Atlas connected via motor (Async driver)
-- **Machine Learning & Analytics**: pandas, scikit-learn, pyod (Python Outlier Detection), shap (explainability)
-- **Geolocation**: geoip2 with MaxMind GeoLite2 databases
+- **Database**: MongoDB Atlas connected via `motor` (Async driver)
+- **Machine Learning & Analytics**: `pandas`, `scikit-learn`, `pyod` (Python Outlier Detection), `shap` (explainability)
+- **Geolocation**: `geoip2` with MaxMind GeoLite2 databases
 
 ---
 
@@ -113,7 +113,7 @@ cd c:\Users\steve\Desktop\MPCHACK2
 
 4. **Access the Dashboard**:
    Open your browser and navigate to:
-   [http://localhost:5173](http://localhost:5173) (or the port specified in your terminal).
+   **[http://localhost:5173](http://localhost:5173)** (or the port specified in your terminal).
 
 ---
 

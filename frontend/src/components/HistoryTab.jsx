@@ -23,11 +23,11 @@ function HistoryCard({ item, onClick }) {
       whileHover={{ scale: 1.01, y: -1 }}
       whileTap={{ scale: 0.99 }}
       className="w-full text-left rounded-2xl p-4 transition-colors"
-      style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ background: 'rgba(0,0,0,0.025)', border: '1px solid rgba(0,0,0,0.07)' }}
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-white/50">{item.transaction_id}</span>
+          <span className="text-xs font-mono text-gray-500">{item.transaction_id}</span>
           <span
             className="text-[10px] font-bold px-2 py-0.5 rounded-full"
             style={{ background: colors.bg, color: colors.text, border: `1px solid ${colors.border}` }}
@@ -40,13 +40,13 @@ function HistoryCard({ item, onClick }) {
         </span>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-white/50">
-        <span className="font-medium text-white/70 truncate mr-2">{item.merchant_name}</span>
+      <div className="flex items-center justify-between text-xs text-gray-500">
+        <span className="font-medium text-gray-700 truncate mr-2">{item.merchant_name}</span>
         <span className="shrink-0">${item.amount?.toFixed(2)}</span>
       </div>
 
       {item.decision_at && (
-        <div className="text-[10px] text-white/30 mt-1">
+        <div className="text-[10px] text-gray-400 mt-1">
           {new Date(item.decision_at).toLocaleString()}
         </div>
       )}
@@ -66,16 +66,16 @@ export default function HistoryTab() {
       {/* Header */}
       <div
         className="flex items-center justify-between px-6 py-3 shrink-0"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+        className="bg-white border-b border-gray-200 flex items-center justify-between px-6 py-3 shrink-0"
       >
         <button
           onClick={() => setMode('queue')}
-          className="flex items-center gap-2 text-sm text-white/50 hover:text-white/80 transition-colors"
+          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors"
         >
           ← Back to Queue
         </button>
-        <span className="text-sm font-semibold text-white/80">Investigation History</span>
-        <span className="text-xs text-white/30">{history.length} cases</span>
+        <span className="text-sm font-semibold text-gray-800">Investigation History</span>
+        <span className="text-xs text-gray-400">{history.length} cases</span>
       </div>
 
       {/* Filters */}
@@ -86,9 +86,9 @@ export default function HistoryTab() {
             onClick={() => setHistoryFilter(f)}
             className="px-3 py-1 rounded-lg text-xs font-semibold transition-colors"
             style={{
-              background: historyFilter === f ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.04)',
+              background: historyFilter === f ? 'rgba(99,102,241,0.25)' : 'rgba(0,0,0,0.04)',
               color: historyFilter === f ? '#818cf8' : '#6b7280',
-              border: `1px solid ${historyFilter === f ? '#6366f140' : 'rgba(255,255,255,0.06)'}`,
+              border: `1px solid ${historyFilter === f ? '#6366f140' : 'rgba(0,0,0,0.06)'}`,
             }}
           >
             {f}
@@ -99,7 +99,7 @@ export default function HistoryTab() {
       {/* List */}
       <div className="flex-1 overflow-y-auto px-6 pb-6">
         {history.length === 0 ? (
-          <div className="flex items-center justify-center h-40 text-white/30 text-sm">
+          <div className="flex items-center justify-center h-40 text-gray-400 text-sm">
             No reviewed cases yet.
           </div>
         ) : (

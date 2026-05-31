@@ -9,7 +9,7 @@ function SharedBadge({ label, icon, shared, count }) {
     >
       <span className="text-xl">{icon}</span>
       <div>
-        <div className="text-xs font-semibold text-white/80">{label}</div>
+        <div className="text-xs font-semibold text-gray-800">{label}</div>
         <div className="text-[11px]" style={{ color: shared ? '#ef4444' : '#22c55e' }}>
           {shared ? `Used by ${count} cards` : 'Not shared'}
         </div>

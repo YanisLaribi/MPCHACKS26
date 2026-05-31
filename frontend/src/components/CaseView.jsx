@@ -11,13 +11,13 @@ import SpendingChart from './evidence/SpendingChart'
 import DeviceIPEvidence from './evidence/DeviceIPEvidence'
 import ChannelEvidence from './evidence/ChannelEvidence'
 import MerchantEvidence from './evidence/MerchantEvidence'
-import SHAPChart from './evidence/SHAPChart'
+import Tooltip from './Tooltip'
 
 const JURY_SEQUENCE = [
   { phase: 'entering',     delay: 0 },
   { phase: 'deliberating', delay: 1200 },
-  { phase: 'voting',       delay: 1800 },
-  { phase: 'complete',     delay: 2400 },
+  { phase: 'voting',       delay: 2400 },
+  { phase: 'complete',     delay: 3000 },
 ]
 
 function EvidenceSection({ tx }) {
@@ -42,11 +42,6 @@ function EvidenceSection({ tx }) {
       <EvidenceCard title="Merchant" icon="🏪">
         <MerchantEvidence merchant={ev.merchant} tx={tx} />
       </EvidenceCard>
-      <div className="col-span-2">
-        <EvidenceCard title="SHAP Feature Impact" icon="📊">
-          <SHAPChart features={tx?.shap_top_features} />
-        </EvidenceCard>
-      </div>
     </div>
   )
 }
@@ -54,10 +49,9 @@ function EvidenceSection({ tx }) {
 function EvidenceCard({ title, icon, children }) {
   return (
     <div
-      className="rounded-2xl p-3"
-      style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
+      className="bg-white border border-gray-200 shadow-sm rounded-2xl p-4"
     >
-      <div className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">
+      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
         {icon} {title}
       </div>
       {children}
@@ -68,31 +62,67 @@ function EvidenceCard({ title, icon, children }) {
 function TransactionMeta({ tx }) {
   const score = Math.round(tx.anomaly_score ?? 0)
   const scoreColor = score > 700 ? '#ef4444' : score > 400 ? '#f59e0b' : '#22c55e'
+  const dangerLevel = score > 700 ? 'High' : score > 400 ? 'Medium' : 'Low'
+  const gaugeWidth = Math.min(100, Math.max(0, (score / 1000) * 100))
+
+  const ev = tx?.evidence_snapshot ?? {}
+  const usualSpending = ev.spending?.avg_amt ? `$${ev.spending.avg_amt.toFixed(2)}` : 'Unknown'
+  const currentSpending = `$${(tx.amount || 0).toFixed(2)}`
 
   return (
-    <div className="flex items-start gap-4 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-      {/* Score badge */}
-      <div className="flex flex-col items-center shrink-0">
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-black font-mono"
-          style={{ background: `${scoreColor}18`, border: `2px solid ${scoreColor}40`, color: scoreColor }}
-        >
-          {score > 999 ? '999+' : score}
+    <div className="bg-white border border-gray-200 shadow-sm rounded-2xl overflow-hidden">
+      
+      {/* Risk Gauge Header */}
+      <div className="p-4 border-b border-gray-100 flex items-center justify-between gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+              Danger Level: {dangerLevel}
+            </span>
+          </div>
+          <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden flex">
+            <motion.div 
+              initial={{ width: 0 }} 
+              animate={{ width: `${gaugeWidth}%` }} 
+              transition={{ duration: 1, ease: 'easeOut' }}
+              className="h-full rounded-full"
+              style={{ background: scoreColor }}
+            />
+          </div>
         </div>
-        <div className="text-[10px] text-white/40 mt-1">/ 1000</div>
+        <div className="text-right shrink-0">
+          <div className="text-2xl font-black font-mono leading-none" style={{ color: scoreColor }}>
+            {score}
+          </div>
+          <div className="text-[10px] text-gray-500 font-medium">/ 1000 AI SCORE</div>
+        </div>
       </div>
 
-      {/* Details */}
-      <div className="flex-1 min-w-0 grid grid-cols-2 gap-x-4 gap-y-1">
-        <MetaRow label="Amount"   value={`$${tx.amount?.toFixed(2)} CAD`} highlight />
-        <MetaRow label="Card"     value={tx.card_id} mono />
-        <MetaRow label="Merchant" value={tx.merchant_name} />
-        <MetaRow label="Category" value={tx.merchant_category} />
-        <MetaRow label="Channel"  value={tx.channel} />
-        <MetaRow label="Time"     value={new Date(tx.timestamp).toLocaleString()} />
-        {tx.ip_address && <MetaRow label="IP" value={tx.ip_address} mono />}
-        {tx.device_id  && <MetaRow label="Device" value={tx.device_id} mono />}
+      {/* Profile Comparison */}
+      <div className="p-4 bg-gray-50 flex flex-col md:flex-row gap-4 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+        <div className="flex-1 space-y-3">
+          <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+            👤 Client's Usual Profile
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <MetaRow label="Avg Spending" value={usualSpending} />
+            <MetaRow label="Home Country" value={tx.cardholder_country} />
+          </div>
+        </div>
+        
+        <div className="flex-1 space-y-3 md:pl-4 pt-4 md:pt-0">
+          <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+            ⚡ This Transaction
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <MetaRow label="Amount" value={currentSpending} highlight />
+            <MetaRow label="Merchant Geo" value={tx.merchant_country} highlight={tx.merchant_country !== tx.cardholder_country} />
+            <MetaRow label="Merchant" value={tx.merchant_name} />
+            <MetaRow label="Channel" value={tx.channel} />
+          </div>
+        </div>
       </div>
+      
     </div>
   )
 }
@@ -100,41 +130,57 @@ function TransactionMeta({ tx }) {
 function MetaRow({ label, value, highlight, mono }) {
   return (
     <div>
-      <div className="text-[10px] text-white/30 uppercase tracking-wider">{label}</div>
-      <div className={`text-sm truncate ${highlight ? 'font-bold text-white' : 'text-white/80'} ${mono ? 'font-mono text-xs' : ''}`}>
+      <div className="flex items-center gap-1 text-[10px] text-gray-400 uppercase tracking-wider">
+        {label}
+      </div>
+      <div className={`text-sm truncate mt-0.5 ${highlight ? 'font-bold text-red-600' : 'text-gray-800'} ${mono ? 'font-mono text-xs' : ''}`}>
         {value ?? '—'}
       </div>
     </div>
   )
 }
 
-function TriageHints() {
+function TriageHints({ onTriage }) {
   return (
-    <div className="flex items-center justify-center gap-6 mt-4">
-      <HintBtn label="Approve" key="approve" icon="←" color="#22c55e" hint="A / ←" />
-      <HintBtn label="Escalate" key="escalate" icon="↑" color="#f59e0b" hint="W / ↑" />
-      <HintBtn label="Block" key="block" icon="→" color="#ef4444" hint="D / →" />
-    </div>
-  )
-}
-
-function HintBtn({ label, icon, color, hint }) {
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold"
-        style={{ background: `${color}15`, border: `1px solid ${color}30`, color }}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <button 
+        onClick={() => onTriage('APPROVE')}
+        className="group flex items-start gap-3 p-3 rounded-xl border border-gray-200 bg-white hover:bg-green-50 hover:border-green-300 transition-colors text-left"
       >
-        {icon}
-      </div>
-      <div className="text-[10px] text-white/60">{hint}</div>
-      <div className="text-[10px] text-white/40">{label}</div>
+        <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-green-600 text-xl font-bold shrink-0">✓</div>
+        <div>
+          <div className="text-sm font-bold text-gray-800 group-hover:text-green-700">Approve</div>
+          <div className="text-[10px] text-gray-500 leading-tight mt-0.5">Transaction proceeds normally. Client is not interrupted.</div>
+        </div>
+      </button>
+
+      <button 
+        onClick={() => onTriage('ESCALATE')}
+        className="group flex items-start gap-3 p-3 rounded-xl border border-gray-200 bg-white hover:bg-orange-50 hover:border-orange-300 transition-colors text-left"
+      >
+        <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600 text-xl font-bold shrink-0">⚠</div>
+        <div>
+          <div className="text-sm font-bold text-gray-800 group-hover:text-orange-700">Escalate</div>
+          <div className="text-[10px] text-gray-500 leading-tight mt-0.5">Flag for Senior Review. Transaction held temporarily.</div>
+        </div>
+      </button>
+
+      <button 
+        onClick={() => onTriage('BLOCK')}
+        className="group flex items-start gap-3 p-3 rounded-xl border border-gray-200 bg-white hover:bg-red-50 hover:border-red-300 transition-colors text-left"
+      >
+        <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600 text-xl font-bold shrink-0">🚫</div>
+        <div>
+          <div className="text-sm font-bold text-gray-800 group-hover:text-red-700">Block</div>
+          <div className="text-[10px] text-gray-500 leading-tight mt-0.5">Decline transaction, freeze card, and send SMS to client.</div>
+        </div>
+      </button>
     </div>
   )
 }
 
 export default function CaseView() {
-  const { queue, activeCase, juryPhase, setJuryPhase, triage, explanation, loadingExpl, loadExplanation, setMode, loadQueue } = useStore()
+  const { queue, activeCase, juryPhase, setJuryPhase, triage, explanation, loadingExpl, loadExplanation, setMode, loadQueue, exportFlaggedCSV, lastTriagedTxId, undoTriage } = useStore()
   const [exitDirection, setExitDirection] = useState(null)
   const timersRef = useRef([])
 
@@ -143,7 +189,7 @@ export default function CaseView() {
     loadQueue()
   }, [])
 
-  // Run jury sequence when new case loads
+  // Run logic when new case loads
   useEffect(() => {
     timersRef.current.forEach(clearTimeout)
     timersRef.current = []
@@ -185,9 +231,9 @@ export default function CaseView() {
 
   if (!activeCase) {
     return (
-      <div className="h-full flex flex-col items-center justify-center gap-4 text-white/30">
+      <div className="h-full flex flex-col items-center justify-center gap-4 text-gray-400">
         <div className="text-5xl">🎉</div>
-        <div className="text-xl font-semibold text-white/60">Queue Empty</div>
+        <div className="text-xl font-semibold text-gray-600">Queue Empty</div>
         <div className="text-sm">All cases have been reviewed.</div>
       </div>
     )
@@ -196,26 +242,39 @@ export default function CaseView() {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Top bar */}
-      <div
-        className="flex items-center justify-between px-6 py-3 shrink-0"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
-      >
+      <div className="bg-white border-b border-gray-200 flex items-center justify-between px-6 py-3 shrink-0">
         <div className="flex items-center gap-4">
           <button
             onClick={() => setMode('queue')}
-            className="text-sm font-semibold text-indigo-400"
+            className="text-sm font-semibold text-indigo-700"
           >
             Fraud Investigation
           </button>
         </div>
         <QueueCounter count={queue.length} />
-        <button
-          onClick={() => setMode('history')}
-          className="text-xs px-3 py-1.5 rounded-lg text-white/50 hover:text-white/80 transition-colors"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-        >
-          History
-        </button>
+        <div className="flex items-center gap-3">
+          {lastTriagedTxId && (
+            <button
+              onClick={() => undoTriage()}
+              className="text-xs px-3 py-1.5 rounded-lg text-gray-800 hover:text-gray-900 transition-colors flex items-center gap-1 bg-yellow-50 border border-yellow-200"
+            >
+              ↩ Undo
+            </button>
+          )}
+          <button
+            onClick={() => exportFlaggedCSV()}
+            className="text-xs px-3 py-1.5 rounded-lg text-gray-800 hover:text-gray-900 transition-colors flex items-center gap-1"
+            style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)' }}
+          >
+            ↓ Export Flagged
+          </button>
+          <button
+            onClick={() => setMode('history')}
+            className="bg-white border border-gray-200 shadow-sm text-xs px-3 py-1.5 rounded-lg text-gray-500 hover:text-gray-800 transition-colors"
+          >
+            History
+          </button>
+        </div>
       </div>
 
       {/* Case content */}
@@ -223,7 +282,7 @@ export default function CaseView() {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeCase.transaction_id}
-            initial={{ opacity: 0, scale: 0.96 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
             className="space-y-4 max-w-4xl mx-auto"
@@ -248,12 +307,9 @@ export default function CaseView() {
         </AnimatePresence>
       </div>
 
-      {/* Triage hints */}
-      <div
-        className="shrink-0 px-6 py-3"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
-      >
-        <TriageHints />
+      {/* Triage action cards */}
+      <div className="bg-gray-50 border-t border-gray-200 shrink-0 px-6 py-4">
+        <TriageHints onTriage={handleTriage} />
       </div>
     </div>
   )

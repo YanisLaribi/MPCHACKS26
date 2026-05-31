@@ -35,7 +35,7 @@ export default function App() {
       {!uploadMsg && (
         <div
           className="text-center text-xs py-1.5 px-4 shrink-0 cursor-pointer hover:bg-white/5 transition-colors"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', color: '#4b5563' }}
+          style={{ borderBottom: '1px solid rgba(0,0,0,0.04)', color: '#4b5563' }}
           onClick={() => fileRef.current?.click()}
         >
           {uploading ? 'Processing CSV...' : '↑ Upload transactions.csv to begin'}

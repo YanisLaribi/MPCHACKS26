@@ -14,14 +14,14 @@ export default function SpendingChart({ spending }) {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-xs text-white/40">Spending vs baseline</div>
+        <div className="text-xs text-gray-500">Spending vs baseline</div>
         <div className="text-sm font-bold font-mono" style={{ color: ratioColor }}>
           {ratio.toFixed(1)}× normal
         </div>
       </div>
       <ResponsiveContainer width="100%" height={90}>
         <BarChart data={data} barSize={36}>
-          <XAxis dataKey="label" tick={{ fill: '#ffffff60', fontSize: 11 }} axisLine={false} tickLine={false} />
+          <XAxis dataKey="label" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} />
           <YAxis hide />
           <Tooltip
             contentStyle={{ background: '#1a1a24', border: '1px solid #2a2a3a', borderRadius: 8, fontSize: 12 }}

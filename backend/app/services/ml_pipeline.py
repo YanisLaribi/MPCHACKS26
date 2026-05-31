@@ -502,7 +502,12 @@ def explain_transaction_with_claude(transaction_id: str) -> dict:
         for name in ["iforest", "ecod", "copod", "hbos"]
     )
 
-    prompt = f"""You are a senior fraud analyst AI. Analyze this suspicious credit card transaction and provide a structured JSON assessment.
+    prompt = f"""You are a senior fraud analyst AI. Analyze this credit card transaction and provide a structured JSON assessment.
+
+CRITICAL INSTRUCTIONS:
+1. DO NOT mention the AI models, judges, anomaly scores, or votes in your explanation.
+2. VERBALIZE the raw data in plain English. Explain exactly WHY the transaction is suspicious by comparing the data points (e.g., "The transaction is highly suspicious because the purchase amount of $500 is 10 times higher than the card's normal average of $50.", or "The card was used in two different countries simultaneously."). 
+3. Make your explanations crystal clear for a non-technical reader.
 
 Transaction ID: {transaction_id}
 Amount: ${row['amount']:.2f} CAD
@@ -511,14 +516,6 @@ Channel: {row['channel']}
 Cardholder country: {ev.get('geo', {}).get('cardholder_country', 'N/A')}
 Merchant country: {ev.get('geo', {}).get('merchant_country', 'N/A')}
 IP country: {ev.get('geo', {}).get('ip_country', 'N/A')}
-Ensemble anomaly score: {row['anomaly_score']:.0f}/1000
-Models flagging fraud: {row['votes']}/4 ({row['fraud_confidence']} confidence)
-
-Model verdicts:
-{model_text}
-
-Top SHAP signals driving the anomaly score:
-{signals_text}
 
 Velocity: {ev.get('velocity', {}).get('last_30min', 0)} txns/30min, {ev.get('velocity', {}).get('last_1hr', 0)} txns/1hr
 Spending: ${row['amount']:.2f} vs card avg ${ev.get('spending', {}).get('card_avg', 0):.2f} ({ev.get('spending', {}).get('ratio', 1):.1f}× baseline)
@@ -526,11 +523,12 @@ Device shared: {ev.get('device_ip', {}).get('device_shared', False)}, IP shared:
 
 Respond ONLY with valid JSON in this exact format (no markdown, no extra text):
 {{
-  "summary": "<one concise sentence executive summary>",
-  "why_suspicious": ["<reason 1>", "<reason 2>", "<reason 3>"],
+  "summary": "<one concise sentence verbalizing exactly why the data looks fraudulent based on the rules above>",
+  "why_suspicious": ["<clear english reason 1, e.g. Spending is 5x higher than normal>", "<clear english reason 2>", "<clear english reason 3>"],
   "key_signals": ["<signal name 1>", "<signal name 2>", "<signal name 3>"],
   "recommended_action": "BLOCK",
-  "reason": "<one sentence justification for the recommended action>"
+  "reason": "<one sentence justification verbalizing the data>",
+  "fraud_type": "<short classification of fraud type, e.g. Account Takeover, Stolen Credentials, Identity Theft, Friendly Fraud, etc.>"
 }}
 
 recommended_action must be exactly one of: APPROVE, BLOCK, ESCALATE"""
@@ -538,7 +536,7 @@ recommended_action must be exactly one of: APPROVE, BLOCK, ESCALATE"""
     try:
         client = anthropic.Anthropic()
         message = client.messages.create(
-            model="claude-sonnet-4-6",
+            model="claude-3-5-sonnet-20240620",
             max_tokens=512,
             messages=[{"role": "user", "content": prompt}],
         )
@@ -555,6 +553,7 @@ recommended_action must be exactly one of: APPROVE, BLOCK, ESCALATE"""
             "key_signals":        data.get("key_signals", []),
             "recommended_action": data.get("recommended_action", "ESCALATE"),
             "reason":             data.get("reason", ""),
+            "fraud_type":         data.get("fraud_type", "Unknown Fraud Type"),
         }
     except Exception as e:
         signals = row.get("signals", [])
@@ -564,6 +563,7 @@ recommended_action must be exactly one of: APPROVE, BLOCK, ESCALATE"""
             "key_signals":        [f["feature"] for f in shap_top[:3]],
             "recommended_action": "ESCALATE",
             "reason":             f"Claude API unavailable ({e}); manual review required.",
+            "fraud_type":         "Unknown Fraud Type",
         }
 
 

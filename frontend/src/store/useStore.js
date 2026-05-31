@@ -13,6 +13,7 @@ const useStore = create((set, get) => ({
   juryPhase: 'idle',    // 'idle' | 'entering' | 'deliberating' | 'voting' | 'complete'
   explanation: null,
   loadingExpl: false,
+  lastTriagedTxId: null,
 
   // History
   history: [],
@@ -58,6 +59,7 @@ const useStore = create((set, get) => ({
       activeCase: next,
       juryPhase: next ? 'entering' : 'idle',
       explanation: null,
+      lastTriagedTxId: txId,
     })
 
     try {
@@ -65,6 +67,19 @@ const useStore = create((set, get) => ({
     } catch (e) {
       console.error('triage failed, reloading queue')
       get().loadQueue()
+    }
+  },
+
+  undoTriage: async () => {
+    const { lastTriagedTxId } = get()
+    if (!lastTriagedTxId) return
+
+    try {
+      await axios.post(`${API}/triage/${lastTriagedTxId}`, { decision: 'UNDO' })
+      set({ lastTriagedTxId: null })
+      get().loadQueue()
+    } catch (e) {
+      console.error('undo error:', e)
     }
   },
 
@@ -120,6 +135,10 @@ const useStore = create((set, get) => ({
     } catch (e) {
       set({ uploading: false, uploadMsg: 'Upload failed.' })
     }
+  },
+
+  exportFlaggedCSV: () => {
+    window.location.href = `${API}/export`
   },
 }))
 

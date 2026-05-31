@@ -49,8 +49,8 @@ export default function SHAPChart({ features }) {
 
   return (
     <div className="space-y-1">
-      <div className="text-xs text-white/40 mb-2">Top SHAP feature contributions</div>
-      <div className="flex gap-3 text-[10px] text-white/40 mb-1">
+      <div className="text-xs text-gray-500 mb-2">Top SHAP feature contributions</div>
+      <div className="flex gap-3 text-[10px] text-gray-500 mb-1">
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500 inline-block" /> Fraud signal</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-green-500 inline-block" /> Normal signal</span>
       </div>
@@ -61,7 +61,7 @@ export default function SHAPChart({ features }) {
             type="category"
             dataKey="label"
             width={130}
-            tick={{ fill: '#ffffff80', fontSize: 11 }}
+            tick={{ fill: '#4b5563', fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />

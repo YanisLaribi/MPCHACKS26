@@ -17,13 +17,13 @@ export default function ChannelEvidence({ channel: channelData, tx }) {
               key={ch}
               className="flex-1 rounded-xl px-2 py-2 text-center"
               style={{
-                background: isActive ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${isActive ? '#6366f140' : 'rgba(255,255,255,0.06)'}`,
+                background: isActive ? 'rgba(99,102,241,0.2)' : 'rgba(0,0,0,0.03)',
+                border: `1px solid ${isActive ? '#6366f140' : 'rgba(0,0,0,0.06)'}`,
               }}
             >
               <div className="text-lg">{CHANNEL_ICONS[ch]}</div>
-              <div className="text-[10px] text-white/50 mt-0.5 capitalize">{ch.replace('_', ' ')}</div>
-              {isActive && <div className="text-[9px] text-indigo-400 font-bold">CURRENT</div>}
+              <div className="text-[10px] text-gray-500 mt-0.5 capitalize">{ch.replace('_', ' ')}</div>
+              {isActive && <div className="text-[9px] text-indigo-700 font-bold">CURRENT</div>}
             </div>
           )
         })}

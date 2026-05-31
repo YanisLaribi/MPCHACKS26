@@ -45,7 +45,7 @@ function Skeleton({ lines = 3 }) {
         <div
           key={i}
           className="h-3 rounded"
-          style={{ background: 'rgba(255,255,255,0.04)', width: `${70 + (i % 3) * 10}%` }}
+          style={{ background: 'rgba(0,0,0,0.04)', width: `${70 + (i % 3) * 10}%` }}
         />
       ))}
     </div>
@@ -59,14 +59,13 @@ export default function ClaudeExplanation({ explanation, loading }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl p-5 space-y-4 text-left"
-      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+      className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5 space-y-4 text-left"
     >
-      <div className="flex items-center justify-between pb-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+      <div className="flex items-center justify-between pb-2" style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Risk Assessment & AI Copilot</span>
+          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Risk Assessment & AI Copilot</span>
         </div>
-        <div className="text-[10px] text-white/30 font-mono">Model: claude-3-5-sonnet</div>
+        <div className="text-[10px] text-gray-400 font-mono">Model: claude-3-5-sonnet</div>
       </div>
 
       {loading ? (
@@ -75,14 +74,24 @@ export default function ClaudeExplanation({ explanation, loading }) {
         <div className="space-y-4">
           {/* Main Executive Summary */}
           <div className="space-y-1.5">
-            <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Executive Summary</div>
-            <p className="text-sm text-white/90 leading-relaxed font-medium">{explanation.summary}</p>
+            <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Executive Summary</div>
+            <p className="text-sm text-gray-900 font-medium leading-relaxed font-medium">{explanation.summary}</p>
           </div>
+
+          {/* Fraud Type Classification */}
+          {explanation.fraud_type && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Fraud Classification:</span>
+              <span className="text-xs font-bold text-red-600 bg-red-400/10 px-2 py-0.5 rounded-full border border-red-400/20">
+                {explanation.fraud_type}
+              </span>
+            </div>
+          )}
 
           {/* Non-Technical Risk Breakdown (Plain English Translation) */}
           {explanation.why_suspicious?.length > 0 && (
             <div className="space-y-2 pt-1">
-              <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider flex items-center gap-1.5">
+              <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
                 <span>💡</span> Why is this transaction flagged? (Non-Technical Explanation)
               </div>
               <div className="grid grid-cols-1 gap-2">
@@ -91,14 +100,13 @@ export default function ClaudeExplanation({ explanation, loading }) {
                   return (
                     <div 
                       key={i} 
-                      className="flex items-start gap-2.5 p-2.5 rounded-xl transition-all"
-                      style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)' }}
+                      className="bg-gray-50 border border-gray-200 shadow-sm flex items-start gap-2.5 p-3 rounded-xl transition-all"
                     >
-                      <span className="text-red-400 font-bold mt-0.5">•</span>
+                      <span className="text-red-600 font-bold mt-0.5">•</span>
                       <div className="space-y-0.5">
-                        <div className="text-xs font-semibold text-white/80">{r}</div>
+                        <div className="text-xs font-semibold text-gray-800">{r}</div>
                         {plainEnglishReason && plainEnglishReason !== r && (
-                          <div className="text-[11px] text-white/40 font-medium italic">
+                          <div className="text-[11px] text-gray-500 font-medium italic">
                             Simple Translation: {plainEnglishReason}
                           </div>
                         )}
@@ -110,29 +118,9 @@ export default function ClaudeExplanation({ explanation, loading }) {
             </div>
           )}
 
-          {/* Recommended Triage Action */}
-          {explanation.recommended_action && (
-            <div className="pt-2">
-              <div
-                className="flex items-start md:items-center gap-3.5 rounded-xl p-3.5"
-                style={{ background: colors.bg, border: `1px solid ${colors.border}` }}
-              >
-                <div 
-                  className="text-xs font-black uppercase tracking-widest px-2.5 py-1 rounded"
-                  style={{ background: `${colors.text}15`, color: colors.text, border: `1px solid ${colors.border}` }}
-                >
-                  {explanation.recommended_action}
-                </div>
-                <div className="flex-1 text-xs font-medium text-white/70 leading-relaxed">
-                  <span className="text-white/40 font-semibold uppercase tracking-wider block mb-0.5 text-[9px]">Decision Justification</span>
-                  {explanation.reason}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       ) : (
-        <p className="text-xs text-white/30 italic">Detailed copilot explanation will appear shortly.</p>
+        <p className="text-xs text-gray-400 italic">Detailed copilot explanation will appear shortly.</p>
       )}
     </motion.div>
   )

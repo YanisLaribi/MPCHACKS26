@@ -8,13 +8,13 @@ export default function MerchantEvidence({ merchant, tx }) {
     <div
       className="flex items-center gap-3 rounded-xl px-3 py-3"
       style={{
-        background: isBurst ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.03)',
-        border: `1px solid ${isBurst ? '#ef444330' : 'rgba(255,255,255,0.06)'}`,
+        background: isBurst ? 'rgba(239,68,68,0.1)' : 'rgba(0,0,0,0.03)',
+        border: `1px solid ${isBurst ? '#ef444330' : 'rgba(0,0,0,0.06)'}`,
       }}
     >
       <span className="text-2xl">🏪</span>
       <div>
-        <div className="text-sm font-semibold text-white/80 truncate max-w-[180px]">
+        <div className="text-sm font-semibold text-gray-800 truncate max-w-[180px]">
           {tx?.merchant_name ?? 'Merchant'}
         </div>
         <div className="text-xs" style={{ color: isBurst ? '#ef4444' : '#6b7280' }}>

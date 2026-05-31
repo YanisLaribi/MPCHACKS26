@@ -35,34 +35,29 @@ export default function GeoMap({ geo }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-3 flex-wrap text-xs">
+      <div className="flex items-center gap-3 flex-wrap text-xs mb-2">
         <span className="flex items-center gap-1">
           <span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" />
-          <span className="text-white/60">Cardholder: <strong className="text-white/90">{cardholder_country}</strong></span>
+          <span className="text-gray-600">Client's Home: <strong className="text-gray-900 font-medium">{cardholder_country}</strong></span>
         </span>
         <span className="flex items-center gap-1">
           <span className="w-2.5 h-2.5 rounded-full bg-green-400 inline-block" />
-          <span className="text-white/60">Merchant: <strong className="text-white/90">{merchant_country}</strong></span>
+          <span className="text-gray-600">Purchase Location: <strong className="text-gray-900 font-medium">{merchant_country}</strong></span>
         </span>
-        {ip_country && (
+        {ip_country && ip_country !== cardholder_country && (
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-full bg-red-400 inline-block" />
-            <span className="text-white/60">IP: <strong className="text-white/90">{ip_country}</strong></span>
+            <span className="text-red-600">Internet Connection: <strong className="font-bold">{ip_country}</strong></span>
           </span>
         )}
         {country_mismatch && (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444' }}>
-            Country mismatch
-          </span>
-        )}
-        {ip_mismatch && (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b' }}>
-            IP mismatch
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444' }}>
+            🚨 Geographic Anomaly (Distance too far)
           </span>
         )}
         {impossible_travel && (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: 'rgba(239,68,68,0.3)', color: '#ef4444' }}>
-            ⚠ Impossible travel
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444' }}>
+            🚨 Impossible Travel Time
           </span>
         )}
       </div>

@@ -61,8 +61,8 @@ async def get_queue():
     # FIFO: oldest first
     cursor = transactions_collection.find(
         {"is_fraud": 1, "status": "Review"}
-    ).sort("timestamp", 1).limit(1000)
-    txns = await cursor.to_list(length=1000)
+    ).sort("timestamp", 1).limit(58)
+    txns = await cursor.to_list(length=58)
     return [_serialize(tx) for tx in txns]
 
 
@@ -87,10 +87,10 @@ async def triage_transaction(transaction_id: str, action: TriageAction):
         raise HTTPException(status_code=404, detail="Transaction not found")
 
     decision = action.decision.upper()
-    if decision not in ("APPROVE", "BLOCK", "ESCALATE"):
+    if decision not in ("APPROVE", "BLOCK", "ESCALATE", "UNDO"):
         raise HTTPException(status_code=400, detail="Invalid decision")
 
-    status_map = {"APPROVE": "Approved", "BLOCK": "Blocked", "ESCALATE": "Escalated"}
+    status_map = {"APPROVE": "Approved", "BLOCK": "Blocked", "ESCALATE": "Escalated", "UNDO": "Review"}
     new_status = status_map[decision]
     decision_at = datetime.now(timezone.utc).isoformat()
 
@@ -99,15 +99,19 @@ async def triage_transaction(transaction_id: str, action: TriageAction):
         {"$set": {"status": new_status, "decision_at": decision_at}},
     )
 
-    await audit_collection.insert_one({
-        "transaction_id": transaction_id,
-        "decision":       decision,
-        "timestamp":      datetime.now(timezone.utc),
-        "risk_score":     tx.get("anomaly_score", 0),
-        "amount":         tx.get("amount", 0),
-        "card_id":        tx.get("card_id", ""),
-        "merchant_name":  tx.get("merchant_name", ""),
-    })
+    if decision == "UNDO":
+        # Remove from audit log
+        await audit_collection.delete_many({"transaction_id": transaction_id})
+    else:
+        await audit_collection.insert_one({
+            "transaction_id": transaction_id,
+            "decision":       decision,
+            "timestamp":      datetime.now(timezone.utc),
+            "risk_score":     tx.get("anomaly_score", 0),
+            "amount":         tx.get("amount", 0),
+            "card_id":        tx.get("card_id", ""),
+            "merchant_name":  tx.get("merchant_name", ""),
+        })
 
     return {"message": "Triage successful", "new_status": new_status}
 
@@ -159,3 +163,43 @@ async def get_transaction_explanation(transaction_id: str):
         )
 
     return result
+
+import io
+from fastapi.responses import StreamingResponse
+import csv
+
+@router.get("/export")
+async def export_transactions():
+    cursor = transactions_collection.find({}).sort("timestamp", 1)
+    txns = await cursor.to_list(length=None)
+    
+    if not txns:
+        return {"message": "No data to export"}
+        
+    output = io.StringIO()
+    # Collect all keys to use as CSV headers. We will add a 'detected_fraud' column.
+    if txns:
+        # Get base headers from the first transaction, ignoring complex structures
+        base_headers = [k for k in txns[0].keys() if k not in ["_id", "explanation", "model_scores", "model_votes", "signals"]]
+        if "detected_fraud" not in base_headers:
+            base_headers.append("detected_fraud")
+            
+        writer = csv.DictWriter(output, fieldnames=base_headers)
+        writer.writeheader()
+        
+        for tx in txns:
+            row = {}
+            for h in base_headers:
+                if h == "detected_fraud":
+                    row[h] = tx.get("is_fraud", 0)
+                else:
+                    row[h] = tx.get(h, "")
+            writer.writerow(row)
+            
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=transactions_export.csv"}
+    )
+

@@ -65,13 +65,13 @@ export default function ReplayOverlay() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-xs text-white/30 uppercase tracking-widest mb-1">Replaying Investigation</div>
-            <div className="text-lg font-bold text-white/80">{tx.transaction_id}</div>
+            <div className="text-xs text-gray-400 uppercase tracking-widest mb-1">Replaying Investigation</div>
+            <div className="text-lg font-bold text-gray-800">{tx.transaction_id}</div>
           </div>
           <button
             onClick={stopReplay}
-            className="px-4 py-2 rounded-xl text-sm font-semibold text-white/50 hover:text-white/80 transition-colors"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+            className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
+            style={{ background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.08)' }}
           >
             ← Close Replay
           </button>
@@ -80,7 +80,7 @@ export default function ReplayOverlay() {
         {/* Transaction info */}
         <div
           className="rounded-2xl p-4 grid grid-cols-2 gap-x-6 gap-y-2"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          className="bg-white border border-gray-200 shadow-sm flex items-start gap-4 p-4 rounded-2xl"
         >
           {[
             ['Amount', `$${tx.amount?.toFixed(2)} CAD`],
@@ -91,8 +91,8 @@ export default function ReplayOverlay() {
             ['Time', new Date(tx.timestamp).toLocaleString()],
           ].map(([label, val]) => (
             <div key={label}>
-              <div className="text-[10px] text-white/30 uppercase">{label}</div>
-              <div className="text-sm text-white/80 truncate">{val}</div>
+              <div className="text-[10px] text-gray-400 uppercase">{label}</div>
+              <div className="text-sm text-gray-800 truncate">{val}</div>
             </div>
           ))}
         </div>
@@ -112,13 +112,13 @@ export default function ReplayOverlay() {
                 ['Channel', '📡', <ChannelEvidence channel={ev.channel} tx={tx} />],
                 ['Merchant', '🏪', <MerchantEvidence merchant={ev.merchant} tx={tx} />],
               ].map(([title, icon, child]) => (
-                <div key={title} className="rounded-2xl p-3" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">{icon} {title}</div>
+                <div key={title} className="rounded-2xl p-3" className="bg-white border border-gray-200 shadow-sm rounded-2xl p-4">
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{icon} {title}</div>
                   {child}
                 </div>
               ))}
-              <div className="col-span-2 rounded-2xl p-3" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <div className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">📊 SHAP Feature Impact</div>
+              <div className="col-span-2 rounded-2xl p-3" className="bg-white border border-gray-200 shadow-sm rounded-2xl p-4">
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">📊 SHAP Feature Impact</div>
                 <SHAPChart features={tx.shap_top_features} />
               </div>
             </motion.div>
@@ -146,7 +146,7 @@ export default function ReplayOverlay() {
                 {decisionStyle.label}
               </div>
               {tx.decision_at && (
-                <div className="text-xs text-white/30 mt-2">
+                <div className="text-xs text-gray-400 mt-2">
                   Reviewed {new Date(tx.decision_at).toLocaleString()}
                 </div>
               )}

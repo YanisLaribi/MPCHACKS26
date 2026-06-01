@@ -159,7 +159,7 @@ The database URI included in `app/database.py` is configured for this hackathon 
 
 ---
 
-## 🔮 If We Had Another Week... (Future Roadmap)
+## 🔮 Future Roadmap
 
 If we had another week to push **Fraud Hunter** to the absolute limit, here is the futuristic roadmap we would implement:
 
